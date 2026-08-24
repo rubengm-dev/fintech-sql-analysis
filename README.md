@@ -1,73 +1,165 @@
-# Fintech SQL Analysis
+# 💳 Fintech SQL Analysis — Transaction Patterns & Fraud Detection
 
-Transaction pattern analysis and fraud detection on a simulated mobile money dataset.
 
-## Overview
 
-Analysis of 100K+ financial transactions to identify:
-- **User segmentation** based on transaction behavior and temporal patterns
-- **Fraud detection patterns** using balance anomalies and transaction characteristics
-- **Product metrics** a fintech team would track (DAU, revenue, growth, detection efficiency)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
 
-## Dataset
 
-[PaySim](https://www.kaggle.com/datasets/ealaxi/paysim1) — synthetic dataset modeled after real mobile money transactions. Contains transfers, payments, cash-ins, cash-outs, and debits with labeled fraud cases.
 
-- **100,000 transactions** sampled preserving all fraud cases and temporal structure
-- **8,213 confirmed fraud cases** across TRANSFER and CASH_OUT types
-- **5 transaction types**: TRANSFER, CASH_OUT, CASH_IN, PAYMENT, DEBIT
+![SQL](https://img.shields.io/badge/SQL-SQLite-orange)
 
-## Project Structure
+
+
+![Pandas](https://img.shields.io/badge/Pandas-Data_Analysis-green)
+
+
+
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+SQL-based transaction pattern analysis and fraud detection on a simulated mobile money dataset (PaySim). Analyzes 100K+ financial transactions to identify user behavior, anomalies, and product metrics relevant to a fintech team.
+
+---
+
+## 🎯 Key Findings
+
+| Metric | Value |
+| --- | --- |
+| **Total Transactions** | 100,000+ |
+| **Fraud Cases Detected** | 8,213 |
+| **Transaction Types** | 5 (TRANSFER, CASH_OUT, CASH_IN, PAYMENT, DEBIT) |
+| **Fraud Concentrated In** | TRANSFER & CASH_OUT only |
+
+---
+
+## 📊 Analysis Areas
+
+### 1. User Segmentation
+
+- Transaction behavior clustering by frequency, volume, and type
+- Temporal patterns: peak hours, daily/weekly cycles
+- High-value vs. micro-transaction user profiles
+
+### 2. Fraud Detection Patterns
+
+- Balance anomaly detection (zero-balance post-transaction)
+- Flagged vs. actually fraudulent transaction analysis
+- Amount thresholds and recipient concentration patterns
+
+### 3. Product Metrics
+
+- DAU (Daily Active Users) estimation
+- Revenue attribution by transaction type
+- Growth and retention indicators
+- Fraud detection efficiency (precision/recall of the flagging system)
+
+---
+
+## 🔧 Tech Stack
+
+| Component | Tool |
+| --- | --- |
+| Database | SQLite |
+| Language | Python 3.12, SQL |
+| Data Processing | Pandas |
+| Dataset | [PaySim](https://www.kaggle.com/datasets/ealaxi/paysim1) (synthetic mobile money) |
+
+---
+
+## 📦 Dataset
+
+**PaySim** — synthetic dataset modeled after real mobile money transactions from a major African mobile operator.
+
+| Feature | Description |
+| --- | --- |
+| `type` | TRANSFER, CASH_OUT, CASH_IN, PAYMENT, DEBIT |
+| `amount` | Transaction amount |
+| `nameOrig` | Sender account |
+| `nameDest` | Receiver account |
+| `oldbalanceOrg` / `newbalanceOrg` | Sender balance before/after |
+| `oldbalanceDest` / `newbalanceDest` | Receiver balance before/after |
+| `isFraud` | Ground truth fraud label |
+| `isFlaggedFraud` | System-flagged transactions |
+
+---
+
+## 📁 Project Structure
 
 ```
+fintech-sql-analysis/
+├── README.md
+├── data/
+│   └── transactions.csv           # PaySim sample (100K rows)
 ├── queries/
-│   ├── 01_exploration.sql      # Volume, distribution, top transactions
-│   ├── 02_segmentation.sql     # Time-based behavior & receiver profiles
-│   ├── 03_fraud_detection.sql  # Fraud patterns & red flags
-│   └── 04_product_metrics.sql  # DAU, revenue, growth, detection efficiency
-├── scripts/
-│   ├── setup_database.py       # Data loading & SQLite setup
-│   └── run_analysis.py         # Execute queries & display results
-├── data/                       # Database (not tracked in git)
-└── README.md
+│   ├── 01_exploration.sql         # Data overview & schema
+│   ├── 02_user_segmentation.sql   # User behavior analysis
+│   ├── 03_fraud_detection.sql     # Fraud pattern queries
+│   └── 04_product_metrics.sql     # Business KPIs
+└── scripts/
+    └── analysis.py                # Python orchestration & visualization
+
 ```
 
-## Setup
+---
 
-```bash
-pip install pandas
-python scripts/setup_database.py
-python scripts/run_analysis.py
+## 🚀 Quick Start
+
+```python
+import sqlite3
+import pandas as pd
+
+# Load data into SQLite
+conn = sqlite3.connect(":memory:")
+df = pd.read_csv("data/transactions.csv")
+df.to_sql("transactions", conn, index=False)
+
+# Run a query
+result = pd.read_sql("""
+    SELECT type, COUNT(*) as count, 
+           SUM(CASE WHEN isFraud=1 THEN 1 ELSE 0 END) as fraud_count
+    FROM transactions 
+    GROUP BY type
+""", conn)
+print(result)
+
 ```
 
-## Key Findings
+---
 
-### Fraud Detection
-- Fraud occurs exclusively in **TRANSFER** (34.8% fraud rate) and **CASH_OUT** (11.3%)
-- Fraudulent transactions average **€1.47M** vs **€315K** for legitimate (4.6x larger)
-- Sender balance dropping to zero is a strong fraud indicator (4,078 fraudulent cash-outs exhibit this)
-- Current flagging system catches only **16 out of 8,213** fraud cases (0.2% recall) — significant gap for ML improvement
+## 📝 Key Learnings
 
-### User Segmentation
-- **47 whale receivers** average €12M in total inflow
-- **Off-peak transfers** are 21% larger than peak-hour transfers on average
-- Peak hours (9:00–20:00) concentrate 85% of all transaction volume
+1. **Fraud is type-specific:** 100% of fraud occurs in TRANSFER and CASH_OUT — other types are clean.
+2. **Flagging system is broken:** The `isFlaggedFraud` column catches almost no actual fraud — a rule-based system would significantly outperform it.
+3. **Balance anomalies are the strongest signal:** Transactions where sender ends at exactly 0 and receiver balance doesn't increase are highly indicative of fraud.
+4. **SQL is powerful for EDA:** Complex fraud patterns can be surfaced with window functions and CTEs before building ML models.
 
-### Product Metrics
-- Week-over-week growth: +45% tx volume in week 1, indicating network effects
-- Estimated daily revenue peaks at **€8.8M** (fee model: 1% payments + 0.5% transfers)
-- Clear weekday/weekend pattern in DAU (10K weekday vs 300 weekend)
+---
 
-## SQL Techniques Used
+## 🔮 Next Steps
 
-- Common Table Expressions (CTEs)
-- Window functions (`LAG` for growth calculation)
-- Conditional aggregation (`CASE WHEN`)
-- Index optimization for query performance
-- Cohort analysis and temporal segmentation
+- [ ] Build a classification model (Logistic Regression / XGBoost) for fraud prediction
+- [ ] Add visualization dashboard (Streamlit or Power BI)
+- [ ] Expand to full PaySim dataset (6.3M transactions)
+- [ ] Network analysis — identify fraud rings via sender-receiver graphs
 
-## Tech Stack
+---
 
-- **SQLite** — lightweight analytical database
-- **Python** — data loading and query execution
-- **pandas** — result formatting
+## 🔗 Links
+
+- 📦 **Dataset:** [PaySim on Kaggle](https://www.kaggle.com/datasets/ealaxi/paysim1)
+- 📓 **Related:** [PPE Detection with YOLOv8](https://github.com/rubengm-dev/PPE-Detection-YOLOv8) (Computer Vision project)
+
+---
+
+## 📄 License
+
+MIT License — free for personal and educational use.
+
+---
+
+## 👤 Author
+
+**Rubén García Márquez**
+
+- 🔗 [LinkedIn](https://www.linkedin.com/in/rub%C3%A9n-garc%C3%ADa-m%C3%A1rquez-84ab08238)
+- 🐙 [GitHub](https://github.com/rubengm-dev)
+
