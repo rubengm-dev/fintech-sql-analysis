@@ -2,19 +2,7 @@
 
 
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-
-
-
-![SQL](https://img.shields.io/badge/SQL-SQLite-orange)
-
-
-
-![Pandas](https://img.shields.io/badge/Pandas-Data_Analysis-green)
-
-
-
-![License](https://img.shields.io/badge/License-MIT-yellow)
+![Python](https://img.shields.io/badge/Python-3.12-blue) ![SQL](https://img.shields.io/badge/SQL-SQLite-orange) ![Pandas](https://img.shields.io/badge/Pandas-Data_Analysis-green) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 SQL-based transaction pattern analysis and fraud detection on a simulated mobile money dataset (PaySim). Analyzes 100K+ financial transactions to identify user behavior, anomalies, and product metrics relevant to a fintech team.
 
